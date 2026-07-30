@@ -1,0 +1,295 @@
+{
+  "pagination": {
+    "limit": 5,
+    "offset": 0,
+    "count": 5,
+    "total": 3349
+  },
+  "data": [
+    {
+      "flight_date": "2026-07-30",
+      "flight_status": "scheduled",
+      "departure": {
+        "airport": "John F Kennedy International",
+        "timezone": "America/New_York",
+        "iata": "JFK",
+        "icao": "KJFK",
+        "terminal": "4",
+        "gate": "B47",
+        "delay": null,
+        "scheduled": "2026-07-30T08:50:00+00:00",
+        "estimated": "2026-07-30T08:50:00+00:00",
+        "actual": null,
+        "estimated_runway": null,
+        "actual_runway": null
+      },
+      "arrival": {
+        "airport": "Cincinnati/Northern Kentucky",
+        "timezone": "America/New_York",
+        "iata": "CVG",
+        "icao": "KCVG",
+        "terminal": "3",
+        "gate": "B9",
+        "baggage": "4",
+        "scheduled": "2026-07-30T11:13:00+00:00",
+        "delay": null,
+        "estimated": null,
+        "actual": null,
+        "estimated_runway": null,
+        "actual_runway": null
+      },
+      "airline": {
+        "name": "El Al",
+        "iata": "LY",
+        "icao": "ELY"
+      },
+      "flight": {
+        "number": "4257",
+        "iata": "LY4257",
+        "icao": "ELY4257",
+        "codeshared": {
+          "airline_name": "delta air lines",
+          "airline_iata": "dl",
+          "airline_icao": "dal",
+          "flight_number": "4985",
+          "flight_iata": "dl4985",
+          "flight_icao": "dal4985"
+        }
+      },
+      "aircraft": {
+        "registration": null,
+        "iata": null,
+        "icao": null,
+        "icao24": "ACAF0B"
+      },
+      "live": null
+    },
+    {
+      "flight_date": "2026-07-30",
+      "flight_status": "scheduled",
+      "departure": {
+        "airport": "John F Kennedy International",
+        "timezone": "America/New_York",
+        "iata": "JFK",
+        "icao": "KJFK",
+        "terminal": "4",
+        "gate": "B47",
+        "delay": null,
+        "scheduled": "2026-07-30T08:50:00+00:00",
+        "estimated": "2026-07-30T08:50:00+00:00",
+        "actual": null,
+        "estimated_runway": null,
+        "actual_runway": null
+      },
+      "arrival": {
+        "airport": "Cincinnati/Northern Kentucky",
+        "timezone": "America/New_York",
+        "iata": "CVG",
+        "icao": "KCVG",
+        "terminal": "3",
+        "gate": "B9",
+        "baggage": "4",
+        "scheduled": "2026-07-30T11:13:00+00:00",
+        "delay": null,
+        "estimated": null,
+        "actual": null,
+        "estimated_runway": null,
+        "actual_runway": null
+      },
+      "airline": {
+        "name": "LATAM Airlines",
+        "iata": "LA",
+        "icao": "LAN"
+      },
+      "flight": {
+        "number": "6760",
+        "iata": "LA6760",
+        "icao": "LAN6760",
+        "codeshared": {
+          "airline_name": "delta air lines",
+          "airline_iata": "dl",
+          "airline_icao": "dal",
+          "flight_number": "4985",
+          "flight_iata": "dl4985",
+          "flight_icao": "dal4985"
+        }
+      },
+      "aircraft": {
+        "registration": null,
+        "iata": null,
+        "icao": null,
+        "icao24": "ACAF0B"
+      },
+      "live": null
+    },
+    {
+      "flight_date": "2026-07-30",
+      "flight_status": "scheduled",
+      "departure": {
+        "airport": "John F Kennedy International",
+        "timezone": "America/New_York",
+        "iata": "JFK",
+        "icao": "KJFK",
+        "terminal": "8",
+        "gate": "1",
+        "delay": null,
+        "scheduled": "2026-07-30T07:20:00+00:00",
+        "estimated": "2026-07-30T07:20:00+00:00",
+        "actual": null,
+        "estimated_runway": null,
+        "actual_runway": null
+      },
+      "arrival": {
+        "airport": "Canc\u00fan International",
+        "timezone": "America/Cancun",
+        "iata": "CUN",
+        "icao": "MMUN",
+        "terminal": "3",
+        "gate": "C0",
+        "baggage": "4",
+        "scheduled": "2026-07-30T10:30:00+00:00",
+        "delay": null,
+        "estimated": null,
+        "actual": null,
+        "estimated_runway": null,
+        "actual_runway": null
+      },
+      "airline": {
+        "name": "Qatar Airways",
+        "iata": "QR",
+        "icao": "QTR"
+      },
+      "flight": {
+        "number": "9080",
+        "iata": "QR9080",
+        "icao": "QTR9080",
+        "codeshared": {
+          "airline_name": "american airlines",
+          "airline_iata": "aa",
+          "airline_icao": "aal",
+          "flight_number": "816",
+          "flight_iata": "aa816",
+          "flight_icao": "aal816"
+        }
+      },
+      "aircraft": {
+        "registration": null,
+        "iata": null,
+        "icao": null,
+        "icao24": "A3428E"
+      },
+      "live": null
+    },
+    {
+      "flight_date": "2026-07-30",
+      "flight_status": "scheduled",
+      "departure": {
+        "airport": "John F Kennedy International",
+        "timezone": "America/New_York",
+        "iata": "JFK",
+        "icao": "KJFK",
+        "terminal": "5",
+        "gate": "508",
+        "delay": null,
+        "scheduled": "2026-07-30T07:15:00+00:00",
+        "estimated": "2026-07-30T07:15:00+00:00",
+        "actual": null,
+        "estimated_runway": null,
+        "actual_runway": null
+      },
+      "arrival": {
+        "airport": "Canc\u00fan International",
+        "timezone": "America/Cancun",
+        "iata": "CUN",
+        "icao": "MMUN",
+        "terminal": "4",
+        "gate": null,
+        "baggage": null,
+        "scheduled": "2026-07-30T10:20:00+00:00",
+        "delay": null,
+        "estimated": null,
+        "actual": null,
+        "estimated_runway": null,
+        "actual_runway": null
+      },
+      "airline": {
+        "name": "Qatar Airways",
+        "iata": "QR",
+        "icao": "QTR"
+      },
+      "flight": {
+        "number": "3908",
+        "iata": "QR3908",
+        "icao": "QTR3908",
+        "codeshared": {
+          "airline_name": "jetblue",
+          "airline_iata": "b6",
+          "airline_icao": "jbu",
+          "flight_number": "851",
+          "flight_iata": "b6851",
+          "flight_icao": "jbu851"
+        }
+      },
+      "aircraft": null,
+      "live": null
+    },
+    {
+      "flight_date": "2026-07-30",
+      "flight_status": "scheduled",
+      "departure": {
+        "airport": "John F Kennedy International",
+        "timezone": "America/New_York",
+        "iata": "JFK",
+        "icao": "KJFK",
+        "terminal": "4",
+        "gate": "A19",
+        "delay": null,
+        "scheduled": "2026-07-30T09:29:00+00:00",
+        "estimated": "2026-07-30T09:29:00+00:00",
+        "actual": null,
+        "estimated_runway": null,
+        "actual_runway": null
+      },
+      "arrival": {
+        "airport": "Charleston, AFB Municipal",
+        "timezone": "America/New_York",
+        "iata": "CHS",
+        "icao": "KCHS",
+        "terminal": null,
+        "gate": "A3",
+        "baggage": null,
+        "scheduled": "2026-07-30T11:49:00+00:00",
+        "delay": null,
+        "estimated": null,
+        "actual": null,
+        "estimated_runway": null,
+        "actual_runway": null
+      },
+      "airline": {
+        "name": "Virgin Atlantic",
+        "iata": "VS",
+        "icao": "VIR"
+      },
+      "flight": {
+        "number": "4695",
+        "iata": "VS4695",
+        "icao": "VIR4695",
+        "codeshared": {
+          "airline_name": "delta air lines",
+          "airline_iata": "dl",
+          "airline_icao": "dal",
+          "flight_number": "5015",
+          "flight_iata": "dl5015",
+          "flight_icao": "dal5015"
+        }
+      },
+      "aircraft": {
+        "registration": null,
+        "iata": null,
+        "icao": null,
+        "icao24": "AB6519"
+      },
+      "live": null
+    }
+  ]
+}
