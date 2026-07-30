@@ -28,7 +28,7 @@ flight-assistant/
 └── front/                 # PySide6 app (not started yet)
 ```
 
-## Backend setup (already done by Yohann, for reference)
+## Backend setup (already done by Sarah, for reference)
 
 1. Python 3.12+ recommended (3.14 works for the back, but PySide6 may not support it yet for the front — check before installing)
 2. `cd back && python -m venv venv && venv\Scripts\activate` (Windows) or `source venv/bin/activate` (Mac/Linux)
