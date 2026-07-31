@@ -1,73 +1,103 @@
 # Flight Assistant
 
-Semester-end project — Desktop Systems Engineering, Mahon Tal.
+Semester-end project — Desktop Systems Engineering, Machon Tal.
 
 See `PRD.md` for the full product/architecture spec.
 
 ## Project structure
 
-```
 flight-assistant/
 ├── PRD.md
 ├── docker-compose.yml
-├── .env                  # Postgres credentials for docker-compose (not committed)
+├── .env # Postgres credentials for docker-compose (not committed)
 ├── back/
-│   ├── app/
-│   │   ├── api/
-│   │   │   ├── queries/      # GET endpoints (read-only)
-│   │   │   └── commands/     # POST endpoints (write)
-│   │   ├── services/         # business logic (event sourcing, etc.)
-│   │   ├── gateway.py         # calls to AviationStack / Ollama
-│   │   ├── models.py          # Pydantic models (API layer)
-│   │   ├── db_models.py       # SQLAlchemy models (DB layer)
-│   │   ├── database.py
-│   │   ├── config.py
-│   │   └── main.py
-│   ├── requirements.txt
-│   └── .env               # AviationStack API key + DB URL (not committed)
-└── front/                 # PySide6 app (not started yet)
-```
+│ ├── app/
+│ │ ├── api/
+│ │ │ ├── queries/ # GET endpoints (read-only)
+│ │ │ └── commands/ # POST endpoints (write)
+│ │ ├── services/ # business logic (event sourcing, auth, RAG)
+│ │ ├── knowledge_base/ # .txt files used by the RAG advisor
+│ │ ├── gateway.py # calls to AviationStack / Ollama
+│ │ ├── models.py # Pydantic models (API layer)
+│ │ ├── db_models.py # SQLAlchemy models (DB layer)
+│ │ ├── database.py
+│ │ ├── config.py
+│ │ └── main.py
+│ ├── requirements.txt
+│ └── .env # AviationStack API key + DB URL + SECRET_KEY (not committed)
+└── front/ # PySide6 app (not started yet)
 
-## Backend setup (already done by Yohann, for reference)
+
+## Backend setup (already done)
 
 1. Python 3.12+ recommended (3.14 works for the back, but PySide6 may not support it yet for the front — check before installing)
 2. `cd back && python -m venv venv && venv\Scripts\activate` (Windows) or `source venv/bin/activate` (Mac/Linux)
 3. `pip install -r requirements.txt`
-4. Create `back/.env` with:
-   ```
-   AVIATIONSTACK_API_KEY=your_key_here
-   DATABASE_URL=postgresql://flight_admin:change_me_local_only@localhost:5434/flight_assistant
-   ```
-5. Create a `.env` at the project root (for docker-compose) with:
-   ```
-   POSTGRES_USER=flight_admin
-   POSTGRES_PASSWORD=change_me_local_only
-   POSTGRES_DB=flight_assistant
-   ```
-6. From the project root: `docker compose up -d`
-7. From `back/`: `uvicorn app.main:app --reload`
-8. Open `http://127.0.0.1:8000/docs` to see and test all endpoints
+4. Create `back/.env.local` (for local development, Docker Postgres) with:
+
+AVIATIONSTACK_API_KEY=your_key_here
+DATABASE_URL=postgresql://flight_admin:change_me_local_only@localhost:5434/flight_assistant
+SECRET_KEY=your_random_secret_here
+
+5. Create `back/.env.cloud` (for the deployed/cloud database, Aiven) with:
+
+AVIATIONSTACK_API_KEY=your_key_here
+DATABASE_URL=postgresql://your_aiven_connection_string?sslmode=require
+SECRET_KEY=your_random_secret_here
+
+6. Create a `.env` at the project root (for docker-compose only, local dev) with:
+
+POSTGRES_USER=flight_admin
+POSTGRES_PASSWORD=change_me_local_only
+POSTGRES_DB=flight_assistant
+
+7. From the project root: `docker compose up -d`
+8. Pull the required Ollama models (one-time):
+
+docker exec -it flight_assistant_ollama ollama pull llama3.2
+docker exec -it flight_assistant_ollama ollama pull nomic-embed-text
+
+9. From `back/`, run against local Postgres (default):
+
+uvicorn app.main:app --reload
+
+   Or run against the cloud (Aiven) database:
+
+set APP_ENV=cloud # Windows cmd
+uvicorn app.main:app --reload
+
+10. Open `http://127.0.0.1:8000/docs` to see and test all endpoints
+11. Click "Authorize" on `/docs` and paste a token (from `/auth/login`) to test protected routes
+
+**Note:** `APP_ENV` defaults to `local` if not set — you only need `set APP_ENV=cloud` when you deliberately want to connect to the Aiven database. Local and cloud databases are completely separate; data created in one does not appear in the other.
 
 ## Available endpoints (for front development)
 
-### Flights (read-only, calls AviationStack)
-- `GET /flights?dep_iata=JFK&limit=5` — search flights departing from an airport
+### Auth (public)
+- `POST /auth/register` — body: `{"email": EmailStr, "password": str}`
+- `POST /auth/login` — body: `{"email": EmailStr, "password": str}` → returns `{"access_token": str}`
 
-### Bookings (CQRS + Event Sourcing)
-- `GET /bookings` — list all bookings (current state)
-- `GET /bookings/{booking_id}` — get one booking's current state
-- `GET /bookings/{booking_id}/history` — get the raw event log for a booking
+### Flights (public, calls AviationStack — be mindful of the 100 req/month free quota)
+- `GET /flights?dep_iata=JFK&limit=5` — search flights departing from an airport
+- `GET /flights/{flight_iata}` — get details for one specific flight (e.g. `LY4257`)
+
+### Bookings (auth required — token via `Authorization: Bearer <token>`)
+- `GET /bookings` — list current user's bookings
+- `GET /bookings/{booking_id}` — get one booking's current state (owner only, else 403)
+- `GET /bookings/{booking_id}/history` — get the raw event log (owner only, else 403)
 - `POST /bookings` — create a booking, body: `{"flight_number": str, "passenger_name": str}`
-- `POST /bookings/{booking_id}/confirm` — confirm a booking
-- `POST /bookings/{booking_id}/cancel` — cancel a booking
+- `POST /bookings/{booking_id}/confirm` — confirm a booking (owner only)
+- `POST /bookings/{booking_id}/cancel` — cancel a booking (owner only)
+
+### AI Advisor (public, RAG over `knowledge_base/`)
+- `POST /advisor` — body: `{"question": str}` → returns `{"answer": str, "sources": [str]}`
 
 ### Not built yet
-- Authentication / login (course requirement #2)
-- AI advisor / RAG endpoint (course requirement 3.4)
-- Flight details as a separate endpoint (currently included in search results)
+- Cloudinary (optional)
 
 ## Notes for the front (PySide6)
 
 - The front talks to the back exclusively via HTTP/JSON (e.g. with `requests` or `httpx`), never touches the database directly.
 - Base URL during development: `http://127.0.0.1:8000`
-- Expected patterns: MVP (Model-View-Presenter) per screen, split into microfrontends (SearchModule, DetailsModule, ChartModule, AIAdvisorModule, BookingModule)
+- Store the JWT from `/auth/login` and send it as `Authorization: Bearer <token>` on every booking request.
+- Expected patterns: MVP (Model-View-Presenter) per screen, split into microfrontends (SearchModule, DetailsModule, ChartModule, AIAdvisorModule, BookingModule, LoginModule)

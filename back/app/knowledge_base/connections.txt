@@ -1,0 +1,8 @@
+A layover (or connection) is a stop between two flights on the same journey,
+where passengers change planes without leaving the airport system entirely.
+A short layover is typically under 90 minutes and carries higher risk of
+missing the next flight if the first one is delayed. If a passenger misses
+their connecting flight because the airline's own earlier flight was delayed,
+the airline is usually responsible for rebooking them onto the next available
+flight at no extra cost. International connections often require passing
+through security or immigration again, depending on the airports involved.

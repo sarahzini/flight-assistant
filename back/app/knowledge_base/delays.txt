@@ -1,0 +1,6 @@
+A flight delay occurs when departure or arrival happens later than scheduled.
+Common causes include weather, air traffic congestion, technical issues, and
+crew availability. Under EU261 regulation, passengers on flights departing from
+the EU (or arriving on an EU airline) may be entitled to compensation for delays
+over 3 hours, depending on the cause and distance. Airlines are generally
+required to provide meals and accommodation for long delays.

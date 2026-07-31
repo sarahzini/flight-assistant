@@ -1,8 +1,9 @@
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from enum import Enum
 
+#Models for the flights API
 
 class Airport(BaseModel):
     name: str
@@ -34,6 +35,9 @@ class AdvisorAnswer(BaseModel):
     answer: str
     sources: list[str] = []
 
+
+#Models for the bookings API
+
 class BookingStatus(str, Enum):
     CREATED = "created"
     CONFIRMED = "confirmed"
@@ -60,4 +64,35 @@ class Booking(BaseModel):
     flight_number: str
     passenger_name: str
     status: BookingStatus
+    user_id: Optional[str] = None
 
+
+#Models for the authentication API
+
+class UserRegister(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class UserOut(BaseModel):
+    id: str
+    email: EmailStr
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+#Models for the AI advisor API
+
+class AdvisorQuery(BaseModel):
+    question: str
+
+
+class AdvisorAnswer(BaseModel):
+    answer: str
+    sources: list[str] = []

@@ -5,8 +5,7 @@ from app.models import Airline, Airport, Flight
 
 AVIATIONSTACK_BASE_URL = "http://api.aviationstack.com/v1"
 
-
-def fetch_flights(dep_iata: str = None, limit: int = 5) -> dict:
+def fetch_flights(dep_iata: str = None, flight_iata: str = None, limit: int = 5) -> dict:
     """Call the AviationStack flights endpoint and return the raw JSON response."""
     params = {
         "access_key": AVIATIONSTACK_API_KEY,
@@ -14,6 +13,8 @@ def fetch_flights(dep_iata: str = None, limit: int = 5) -> dict:
     }
     if dep_iata:
         params["dep_iata"] = dep_iata
+    if flight_iata:
+        params["flight_iata"] = flight_iata
 
     response = httpx.get(f"{AVIATIONSTACK_BASE_URL}/flights", params=params)
     response.raise_for_status()
@@ -46,3 +47,24 @@ def parse_flight(raw: dict) -> Flight:
             delay=raw["arrival"]["delay"],
         ),
     )
+
+def fetch_embedding(text: str) -> list[float]:
+    """Turn a piece of text into a vector of numbers representing its meaning."""
+    response = httpx.post(
+        "http://localhost:11434/api/embeddings",
+        json={"model": "nomic-embed-text", "prompt": text},
+        timeout=30,
+    )
+    response.raise_for_status()
+    return response.json()["embedding"]
+
+
+def fetch_advisor_completion(prompt: str) -> str:
+    """Ask the LLM to generate a text answer for a given prompt."""
+    response = httpx.post(
+        "http://localhost:11434/api/generate",
+        json={"model": "llama3.2", "prompt": prompt, "stream": False},
+        timeout=60,
+    )
+    response.raise_for_status()
+    return response.json()["response"]

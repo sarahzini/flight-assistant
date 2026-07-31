@@ -5,9 +5,10 @@ Semester-end project — Desktop Systems Engineering.
 Team: Sarah (back) + Nomi (front)
 
 ## 2. Product goal
-A desktop application that helps a user search for flights, view their details,
-visualize trends (price/schedule), get advice from an AI agent specialized in the
-aviation domain (RAG), and simulate a booking.
+A desktop application that helps an authenticated user search for flights,
+view their details, visualize trends (price/schedule), get advice from an
+AI agent specialized in the aviation domain (RAG), and simulate a booking
+tied to their account.
 
 ## 3. Target users
 Traveler looking to compare flights and understand aviation domain vocabulary/procedures
@@ -41,6 +42,10 @@ without prior expertise.
 - `BookingCreated`
 - `BookingConfirmed`
 - `BookingCancelled`
+
+Booking IDs use 7-character alphanumeric codes (uppercase letters + digits)
+instead of UUIDs, for human readability — a deliberate simplification
+acceptable for a demo-scale project.
 
 ## 8. Tech stack
 Python 3.14 (back). Python 3.12 or 3.13 recommended for the front if PySide6 has issues with 3.14.

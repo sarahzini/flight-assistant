@@ -1,0 +1,10 @@
+Airlines are identified by a two-letter IATA code and typically operate
+under either a full-service model (checked baggage, meals, and seat
+selection included) or a low-cost model (fees charged separately for most
+extras). Full-service and low-cost carriers alike publish a "conditions of
+carriage" document that governs refunds, changes, and liability, which
+passengers implicitly accept when purchasing a ticket. Alliances (such as
+Star Alliance, SkyTeam, or Oneworld) let passengers earn and use frequent
+flyer benefits across partner airlines, and codeshare agreements mean a
+single itinerary can involve flights physically operated by a different
+airline than the one it was booked with.

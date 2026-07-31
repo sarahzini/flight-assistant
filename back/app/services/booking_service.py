@@ -1,4 +1,5 @@
-import uuid
+import random
+import string
 from datetime import datetime
 
 from sqlalchemy.orm import Session
@@ -19,8 +20,8 @@ def _append_event(db: Session, event_type: str, booking_id: str, data: dict) -> 
     db.commit()
 
 
-def create_booking(db: Session, request: BookingRequest) -> Booking:
-    booking_id = str(uuid.uuid4())
+def create_booking(db: Session, request: BookingRequest, user_id: str) -> Booking:
+    booking_id = _generate_booking_id(db)
     _append_event(
         db,
         event_type="BookingCreated",
@@ -28,6 +29,7 @@ def create_booking(db: Session, request: BookingRequest) -> Booking:
         data={
             "flight_number": request.flight_number,
             "passenger_name": request.passenger_name,
+            "user_id": user_id,
         },
     )
     return replay_events(db, booking_id)
@@ -57,6 +59,7 @@ def replay_events(db: Session, booking_id: str) -> Booking:
         "flight_number": None,
         "passenger_name": None,
         "status": BookingStatus.CREATED,
+        "user_id": None,
     }
 
     for row in rows:
@@ -64,6 +67,7 @@ def replay_events(db: Session, booking_id: str) -> Booking:
             state["flight_number"] = row.data["flight_number"]
             state["passenger_name"] = row.data["passenger_name"]
             state["status"] = BookingStatus.CREATED
+            state["user_id"] = row.data.get("user_id")
         elif row.event_type == "BookingConfirmed":
             state["status"] = BookingStatus.CONFIRMED
         elif row.event_type == "BookingCancelled":
@@ -71,11 +75,11 @@ def replay_events(db: Session, booking_id: str) -> Booking:
 
     return Booking(**state)
 
-def list_bookings(db: Session) -> list[Booking]:
-    """Query: list all bookings, each rebuilt from its own event history."""
+def list_bookings(db: Session, user_id: str) -> list[Booking]:
+    """Query: list all bookings belonging to a specific user."""
     booking_ids = db.query(BookingEventRow.booking_id).distinct().all()
-    return [replay_events(db, row[0]) for row in booking_ids]
-
+    all_bookings = [replay_events(db, row[0]) for row in booking_ids]
+    return [b for b in all_bookings if b.user_id == user_id]
 
 def get_booking_history(db: Session, booking_id: str) -> list[BookingEvent]:
     """Query: return the raw, unmodified event log for a booking — not the replayed state."""
@@ -94,3 +98,22 @@ def get_booking_history(db: Session, booking_id: str) -> list[BookingEvent]:
         )
         for row in rows
     ]
+
+def booking_exists(db: Session, booking_id: str) -> bool:
+    """Check whether any event exists for this booking_id — i.e. whether it was ever created."""
+    return (
+        db.query(BookingEventRow)
+        .filter(BookingEventRow.booking_id == booking_id)
+        .first()
+        is not None
+    )
+
+def _generate_booking_id(db: Session) -> str:
+    """Generate a random 7-character alphanumeric booking id (uppercase letters + digits),
+    retrying on the rare collision."""
+    characters = string.ascii_uppercase + string.digits
+    for _ in range(50):
+        candidate = "".join(random.choices(characters, k=7))
+        if not booking_exists(db, candidate):
+            return candidate
+    raise RuntimeError("Could not generate a unique booking id — id space exhausted")

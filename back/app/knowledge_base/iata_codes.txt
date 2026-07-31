@@ -1,0 +1,6 @@
+IATA codes are three-letter codes that uniquely identify airports worldwide,
+such as JFK for New York John F. Kennedy or TLV for Tel Aviv Ben Gurion.
+Airlines also have their own two-letter IATA codes, such as LY for El Al or
+DL for Delta Air Lines. A flight number combines the airline code with a
+number, for example LY4257, which uniquely identifies a specific scheduled
+flight.

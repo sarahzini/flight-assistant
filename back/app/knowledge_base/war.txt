@@ -1,0 +1,13 @@
+Airlines may suspend or cancel flights due to force majeure events, such as
+armed conflict, war, civil unrest, or government-issued airspace closures.
+In these cases, standard delay-compensation rules (such as EU261) typically
+do not apply, since the disruption is considered outside the airline's
+control. Most airlines' conditions of carriage state that if a flight is
+cancelled due to war or a closed airspace, passengers are usually entitled
+to a full refund or a fee-free rebooking to a later date, though policies
+vary by airline and by the specific situation. During active conflict
+periods, national aviation authorities may also issue temporary flight
+bans to and from certain airports, which airlines are required to follow
+regardless of individual ticket terms. Passengers are generally advised to
+check the airline's official advisory page for conflict-related schedule
+changes rather than assuming standard delay or cancellation policies apply.
