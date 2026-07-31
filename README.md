@@ -24,7 +24,8 @@ flight-assistant/
 │ │ ├── config.py
 │ │ └── main.py
 │ ├── requirements.txt
-│ └── .env # AviationStack API key + DB URL + SECRET_KEY (not committed)
+│ ├── .env.local # local dev config: AviationStack key, local DB URL, SECRET_KEY (not committed)
+│ └── .env.cloud # cloud config: AviationStack key, Aiven DB URL, SECRET_KEY (not committed)
 └── front/ # PySide6 app (not started yet)
 
 
@@ -57,19 +58,27 @@ POSTGRES_DB=flight_assistant
 docker exec -it flight_assistant_ollama ollama pull llama3.2
 docker exec -it flight_assistant_ollama ollama pull nomic-embed-text
 
-9. From `back/`, run against local Postgres (default):
 
+## Quick start (every day, after the one-time setup above)
+
+```cmd
+cd flight-assistant
+docker compose up -d
+cd back
+venv\Scripts\activate
 uvicorn app.main:app --reload
+```
 
-   Or run against the cloud (Aiven) database:
+Then open `http://127.0.0.1:8000/docs` to see and test all endpoints.
 
-set APP_ENV=cloud # Windows cmd
+To use the cloud (Aiven) database instead of local Postgres:
+```cmd
+set APP_ENV=cloud
 uvicorn app.main:app --reload
+```
+`APP_ENV` defaults to `local` if not set. Local and cloud databases are completely separate — data created in one does not appear in the other.
 
-10. Open `http://127.0.0.1:8000/docs` to see and test all endpoints
-11. Click "Authorize" on `/docs` and paste a token (from `/auth/login`) to test protected routes
-
-**Note:** `APP_ENV` defaults to `local` if not set — you only need `set APP_ENV=cloud` when you deliberately want to connect to the Aiven database. Local and cloud databases are completely separate; data created in one does not appear in the other.
+To stop: `Ctrl+C` in the uvicorn terminal, then `docker compose down` (or leave Docker running in the background, it doesn't hurt).
 
 ## Available endpoints (for front development)
 
@@ -88,6 +97,8 @@ uvicorn app.main:app --reload
 - `POST /bookings` — create a booking, body: `{"flight_number": str, "passenger_name": str}`
 - `POST /bookings/{booking_id}/confirm` — confirm a booking (owner only)
 - `POST /bookings/{booking_id}/cancel` — cancel a booking (owner only)
+
+**Note:** `booking_id` is a 7-character alphanumeric code (e.g. `A3K9F2X`), not a UUID — chosen for readability.
 
 ### AI Advisor (public, RAG over `knowledge_base/`)
 - `POST /advisor` — body: `{"question": str}` → returns `{"answer": str, "sources": [str]}`
