@@ -1,6 +1,6 @@
 # Flight Assistant
 
-Semester-end project — Desktop Systems Engineering, Machon Tal.
+Semester-end project — Desktop Systems Engineering, Machon Lev.
 
 See `PRD.md` for the full product/architecture spec.
 
@@ -29,7 +29,7 @@ flight-assistant/
 └── front/ # PySide6 app (not started yet)
 
 
-## Backend setup (already done)
+## Backend setup (one-time, already done by Yohann, for reference)
 
 1. Python 3.12+ recommended (3.14 works for the back, but PySide6 may not support it yet for the front — check before installing)
 2. `cd back && python -m venv venv && venv\Scripts\activate` (Windows) or `source venv/bin/activate` (Mac/Linux)
