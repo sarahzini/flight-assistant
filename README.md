@@ -26,7 +26,16 @@ flight-assistant/
 │ ├── requirements.txt
 │ ├── .env.local # local dev config: AviationStack key, local DB URL, SECRET_KEY (not committed)
 │ └── .env.cloud # cloud config: AviationStack key, Aiven DB URL, SECRET_KEY (not committed)
-└── front/ # PySide6 app (not started yet)
+└── front/ # PySide6 desktop app (Phase 0 complete — see Front-end below)
+    ├── app/
+    │   ├── main.py              # QApplication entry + health check
+    │   ├── config.py            # BASE_URL = http://127.0.0.1:8000
+    │   ├── api/                 # httpx client + endpoint wrappers
+    │   ├── domain/models.py     # dataclasses mirroring backend models
+    │   ├── shared/              # Session (JWT), AppState (cross-module data)
+    │   ├── shell/               # LoginWindow, MainWindow (Phase 1–2)
+    │   └── modules/             # MVP modules: login, search, details, chart, booking, advisor
+    └── requirements.txt
 
 
 ## Backend setup (one-time, already done by Yohann, for reference)
@@ -80,6 +89,52 @@ uvicorn app.main:app --reload
 
 To stop: `Ctrl+C` in the uvicorn terminal, then `docker compose down` (or leave Docker running in the background, it doesn't hurt).
 
+## Front-end (PySide6)
+
+**Status: Phases 0–7 complete (MVP).** Login → Search (with inline flight details) → Chart → Bookings → AI Advisor. The front talks to the API only via HTTP/JSON.
+
+The front talks to the back **only via HTTP/JSON** (`httpx`) — it never touches the database directly. Base URL: `http://127.0.0.1:8000`.
+
+### Front-end setup (one-time)
+
+1. Use **Python 3.12 or 3.13** (PySide6 may not support 3.14 yet).
+2. From the project root:
+
+```cmd
+cd front
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+On Mac/Linux, use `source venv/bin/activate` instead of `venv\Scripts\activate`.
+
+### Run the front-end
+
+Start the backend first (see Quick start above), then in a second terminal:
+
+```cmd
+cd front
+venv\Scripts\activate
+python -m app.main
+```
+
+You should see the login window. A green “Connected to backend” status means the API is reachable. After login or register, the main shell opens with sidebar navigation; **Log out** returns to the login screen.
+
+### Phase 0 — what’s in place
+
+| Piece | Location | Purpose |
+|---|---|---|
+| Config | `front/app/config.py` | `BASE_URL` for the FastAPI backend |
+| API client | `front/app/api/client.py` | `get` / `post`, Bearer auth, HTTP error mapping |
+| Endpoint wrappers | `front/app/api/{auth,flights,bookings,advisor}.py` | Typed calls to backend routes |
+| Domain models | `front/app/domain/models.py` | `Flight`, `Booking`, `Token`, `AdvisorAnswer`, etc. |
+| Session | `front/app/shared/session.py` | In-memory JWT + `is_authenticated()` |
+| App state | `front/app/shared/app_state.py` | Selected flight and search results across modules |
+| Shell / modules | `front/app/shell/`, `front/app/modules/` | Login, Search+Details, Chart, Bookings, Advisor |
+
+**MVP modules:** Login, Search (+ inline Details), Chart, Bookings, AI Advisor.
+
 ## Available endpoints (for front development)
 
 ### Auth (public)
@@ -105,10 +160,3 @@ To stop: `Ctrl+C` in the uvicorn terminal, then `docker compose down` (or leave 
 
 ### Not built yet
 - Cloudinary (optional)
-
-## Notes for the front (PySide6)
-
-- The front talks to the back exclusively via HTTP/JSON (e.g. with `requests` or `httpx`), never touches the database directly.
-- Base URL during development: `http://127.0.0.1:8000`
-- Store the JWT from `/auth/login` and send it as `Authorization: Bearer <token>` on every booking request.
-- Expected patterns: MVP (Model-View-Presenter) per screen, split into microfrontends (SearchModule, DetailsModule, ChartModule, AIAdvisorModule, BookingModule, LoginModule)

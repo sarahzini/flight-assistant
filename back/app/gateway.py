@@ -22,29 +22,34 @@ def fetch_flights(dep_iata: str = None, flight_iata: str = None, limit: int = 5)
 
 def parse_flight(raw: dict) -> Flight:
     """Convert a raw AviationStack flight dict into our Flight model."""
+    airline_raw = raw.get("airline") or {}
+    flight_raw = raw.get("flight") or {}
+    departure_raw = raw.get("departure") or {}
+    arrival_raw = raw.get("arrival") or {}
+
     return Flight(
-        flight_date=raw["flight_date"],
-        flight_status=raw["flight_status"],
-        flight_number=raw["flight"]["iata"],
+        flight_date=raw.get("flight_date"),
+        flight_status=raw.get("flight_status"),
+        flight_number=flight_raw.get("iata"),
         airline=Airline(
-            name=raw["airline"]["name"],
-            iata=raw["airline"]["iata"],
+            name=airline_raw.get("name"),
+            iata=airline_raw.get("iata"),
         ),
         departure=Airport(
-            name=raw["departure"]["airport"],
-            iata=raw["departure"]["iata"],
-            scheduled_time=raw["departure"]["scheduled"],
-            terminal=raw["departure"]["terminal"],
-            gate=raw["departure"]["gate"],
-            delay=raw["departure"]["delay"],
+            name=departure_raw.get("airport"),
+            iata=departure_raw.get("iata"),
+            scheduled_time=departure_raw.get("scheduled"),
+            terminal=departure_raw.get("terminal"),
+            gate=departure_raw.get("gate"),
+            delay=departure_raw.get("delay"),
         ),
         arrival=Airport(
-            name=raw["arrival"]["airport"],
-            iata=raw["arrival"]["iata"],
-            scheduled_time=raw["arrival"]["scheduled"],
-            terminal=raw["arrival"]["terminal"],
-            gate=raw["arrival"]["gate"],
-            delay=raw["arrival"]["delay"],
+            name=arrival_raw.get("airport"),
+            iata=arrival_raw.get("iata"),
+            scheduled_time=arrival_raw.get("scheduled"),
+            terminal=arrival_raw.get("terminal"),
+            gate=arrival_raw.get("gate"),
+            delay=arrival_raw.get("delay"),
         ),
     )
 
@@ -63,8 +68,17 @@ def fetch_advisor_completion(prompt: str) -> str:
     """Ask the LLM to generate a text answer for a given prompt."""
     response = httpx.post(
         "http://localhost:11434/api/generate",
-        json={"model": "llama3.2", "prompt": prompt, "stream": False},
-        timeout=60,
+        json={
+            "model": "llama3.2",
+            "prompt": prompt,
+            "stream": False,
+            "options": {
+                "temperature": 0.2,
+                "top_p": 0.9,
+                "num_predict": 280,
+            },
+        },
+        timeout=90,
     )
     response.raise_for_status()
     return response.json()["response"]

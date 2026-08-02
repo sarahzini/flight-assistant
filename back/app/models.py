@@ -6,26 +6,25 @@ from enum import Enum
 #Models for the flights API
 
 class Airport(BaseModel):
-    name: str
-    iata: str
-    scheduled_time: str
+    name: str | None = None
+    iata: str | None = None
+    scheduled_time: str | None = None
     terminal: Optional[str] = None
     gate: Optional[str] = None
     delay: Optional[int] = None
 
 
 class Airline(BaseModel):
-    name: str
-    iata: str
-
+    name: str | None = None
+    iata: str | None = None
 
 class Flight(BaseModel):
-    flight_date: str
-    flight_status: str
-    flight_number: str
-    airline: Airline
-    departure: Airport
-    arrival: Airport
+    flight_date: str | None = None
+    flight_status: str | None = None
+    flight_number: str | None = None
+    airline: Airline | None = None
+    departure: Airport | None = None
+    arrival: Airport | None = None
 
 class AdvisorQuery(BaseModel):
     question: str
@@ -86,13 +85,3 @@ class UserOut(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
-
-#Models for the AI advisor API
-
-class AdvisorQuery(BaseModel):
-    question: str
-
-
-class AdvisorAnswer(BaseModel):
-    answer: str
-    sources: list[str] = []
