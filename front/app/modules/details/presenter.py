@@ -2,13 +2,15 @@ from __future__ import annotations
 
 from PySide6.QtCore import QObject
 
-from app.api.client import ApiError
+from app.api.client import error_message
+from app.domain.models import Flight
 from app.modules.details.model import DetailsModel
 from app.modules.details.view import FlightDetailsPanel
 from app.shared.app_state import AppState
+from app.shared.async_worker import AsyncTaskRunner
 
 
-class DetailsPresenter(QObject):
+class DetailsPresenter(QObject, AsyncTaskRunner):
     def __init__(self, view: FlightDetailsPanel, model: DetailsModel, app_state: AppState) -> None:
         super().__init__()
         self._view = view
@@ -33,20 +35,27 @@ class DetailsPresenter(QObject):
             self._view.show_placeholder()
             return
 
+        flight_number = flight.flight_number
         self._view.clear_error()
         self._view.set_loading(True)
 
-        try:
-            updated = self._model.get_details(flight.flight_number)
-            self._app_state.set_selected_flight(updated)
-            self._update_search_results(updated)
-            self._view.show_flight(updated)
-        except ApiError as exc:
-            self._view.set_error(exc.message)
-        finally:
-            self._view.set_loading(False)
+        self.run_async(
+            lambda: self._model.get_details(flight_number),
+            self._on_refresh_success,
+            self._on_refresh_error,
+        )
 
-    def _update_search_results(self, flight) -> None:
+    def _on_refresh_success(self, updated: Flight) -> None:
+        self._view.set_loading(False)
+        self._app_state.set_selected_flight(updated)
+        self._update_search_results(updated)
+        self._view.show_flight(updated)
+
+    def _on_refresh_error(self, exc: Exception) -> None:
+        self._view.set_loading(False)
+        self._view.set_error(error_message(exc))
+
+    def _update_search_results(self, flight: Flight) -> None:
         results = self._app_state.search_results
         for index, item in enumerate(results):
             if item.flight_number == flight.flight_number:

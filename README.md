@@ -131,6 +131,8 @@ You should see the login window. A green “Connected to backend” status means
 | Domain models | `front/app/domain/models.py` | `Flight`, `Booking`, `Token`, `AdvisorAnswer`, etc. |
 | Session | `front/app/shared/session.py` | In-memory JWT + `is_authenticated()` |
 | App state | `front/app/shared/app_state.py` | Selected flight and search results across modules |
+| Async worker | `front/app/shared/async_worker.py` | Runs API calls off the Qt UI thread so the app never freezes (esp. the slow AI Advisor call) |
+| Theme | `front/app/shared/theme.py` | Shared colors, spacing/typography scale, and reusable styled widgets (buttons, labels, inputs) used by every screen |
 | Shell / modules | `front/app/shell/`, `front/app/modules/` | Login, Search+Details, Chart, Bookings, Advisor |
 
 **MVP modules:** Login, Search (+ inline Details), Chart, Bookings, AI Advisor.

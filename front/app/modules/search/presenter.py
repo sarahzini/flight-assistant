@@ -2,13 +2,15 @@ from __future__ import annotations
 
 from PySide6.QtCore import QObject, Signal
 
-from app.api.client import ApiError
+from app.api.client import error_message
+from app.domain.models import Flight
 from app.modules.search.model import SearchModel
 from app.modules.search.view import SearchView
 from app.shared.app_state import AppState
+from app.shared.async_worker import AsyncTaskRunner
 
 
-class SearchPresenter(QObject):
+class SearchPresenter(QObject, AsyncTaskRunner):
     selection_changed = Signal()
 
     def __init__(self, view: SearchView, model: SearchModel, app_state: AppState) -> None:
@@ -31,20 +33,26 @@ class SearchPresenter(QObject):
         self._view.clear_error()
         self._view.set_loading(True)
 
-        try:
-            flights = self._model.search(dep_iata, limit)
-            self._app_state.set_search_results(flights)
-            self._app_state.set_selected_flight(None)
-            self._view.populate_table(flights)
-            self.selection_changed.emit()
-        except ApiError as exc:
-            self._view.clear_table()
-            self._app_state.set_search_results([])
-            self._app_state.set_selected_flight(None)
-            self._view.set_error(exc.message)
-            self.selection_changed.emit()
-        finally:
-            self._view.set_loading(False)
+        self.run_async(
+            lambda: self._model.search(dep_iata, limit),
+            self._on_search_success,
+            self._on_search_error,
+        )
+
+    def _on_search_success(self, flights: list[Flight]) -> None:
+        self._view.set_loading(False)
+        self._app_state.set_search_results(flights)
+        self._app_state.set_selected_flight(None)
+        self._view.populate_table(flights)
+        self.selection_changed.emit()
+
+    def _on_search_error(self, exc: Exception) -> None:
+        self._view.set_loading(False)
+        self._view.clear_table()
+        self._app_state.set_search_results([])
+        self._app_state.set_selected_flight(None)
+        self._view.set_error(error_message(exc))
+        self.selection_changed.emit()
 
     def _on_row_selected(self, row: int) -> None:
         if row < 0 or row >= len(self._app_state.search_results):

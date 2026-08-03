@@ -1,21 +1,18 @@
 from __future__ import annotations
 
-import math
-
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QFrame,
     QGridLayout,
     QHBoxLayout,
     QLabel,
-    QPushButton,
     QScrollArea,
-    QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
 
 from app.domain.models import Flight
+from app.shared.theme import Color, ErrorLabel, GhostIconButton
 
 
 class FlightDetailsPanel(QFrame):
@@ -34,11 +31,11 @@ class FlightDetailsPanel(QFrame):
 
     def _build_ui(self) -> None:
         self.setStyleSheet(
-            """
-            QFrame#flightDetailsPanel {
-                background: #ffffff;
-                border-left: 1px solid #e2e8f0;
-            }
+            f"""
+            QFrame#flightDetailsPanel {{
+                background: {Color.WHITE};
+                border-left: 1px solid {Color.SLATE_200};
+            }}
             """
         )
 
@@ -48,25 +45,10 @@ class FlightDetailsPanel(QFrame):
 
         header = QHBoxLayout()
         self._heading = QLabel("Flight details")
-        self._heading.setStyleSheet("font-size: 14px; font-weight: 700; color: #0f172a;")
+        self._heading.setStyleSheet(f"font-size: 14px; font-weight: 700; color: {Color.INK};")
 
-        self._refresh_button = QPushButton("↻")
-        self._refresh_button.setFixedSize(28, 28)
+        self._refresh_button = GhostIconButton("↻")
         self._refresh_button.setToolTip("Refresh from API")
-        self._refresh_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._refresh_button.setStyleSheet(
-            """
-            QPushButton {
-                background: #eff6ff;
-                color: #2563eb;
-                border: 1px solid #bfdbfe;
-                border-radius: 6px;
-                font-size: 14px;
-            }
-            QPushButton:hover { background: #dbeafe; }
-            QPushButton:disabled { color: #93c5fd; }
-            """
-        )
         self._refresh_button.clicked.connect(self.refresh_clicked.emit)
         self._refresh_button.hide()
 
@@ -79,7 +61,9 @@ class FlightDetailsPanel(QFrame):
         )
         self._placeholder.setWordWrap(True)
         self._placeholder.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self._placeholder.setStyleSheet("color: #64748b; font-size: 12px; line-height: 1.4;")
+        self._placeholder.setStyleSheet(
+            f"color: {Color.SLATE_500}; font-size: 12px; line-height: 1.4;"
+        )
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
@@ -109,10 +93,8 @@ class FlightDetailsPanel(QFrame):
         scroll.setWidget(self._content)
         self._content.hide()
 
-        self._error_label = QLabel()
-        self._error_label.setWordWrap(True)
-        self._error_label.setStyleSheet("color: #dc2626; font-size: 12px;")
-        self._error_label.hide()
+        self._error_label = ErrorLabel()
+        self._error_label.setStyleSheet(f"color: {Color.DANGER}; font-size: 12px;")
 
         outer.addLayout(header)
         outer.addWidget(self._placeholder)
@@ -125,10 +107,10 @@ class FlightDetailsPanel(QFrame):
         box = QVBoxLayout()
         box.setSpacing(2)
         name = QLabel(label)
-        name.setStyleSheet("color: #64748b; font-size: 10px; text-transform: uppercase;")
+        name.setStyleSheet(f"color: {Color.SLATE_500}; font-size: 10px; text-transform: uppercase;")
         value = QLabel("—")
         value.setWordWrap(True)
-        value.setStyleSheet("color: #0f172a; font-size: 13px; font-weight: 600;")
+        value.setStyleSheet(f"color: {Color.INK}; font-size: 13px; font-weight: 600;")
         box.addWidget(name)
         box.addWidget(value)
         grid.addLayout(box, row, col)
@@ -137,14 +119,15 @@ class FlightDetailsPanel(QFrame):
     def _build_airport_block(self, title: str) -> QFrame:
         card = QFrame()
         card.setStyleSheet(
-            "QFrame { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; }"
+            f"QFrame {{ background: {Color.SLATE_50}; border: 1px solid {Color.SLATE_200}; "
+            "border-radius: 8px; }}"
         )
         layout = QVBoxLayout(card)
         layout.setContentsMargins(10, 8, 10, 8)
         layout.setSpacing(3)
 
         heading = QLabel(title)
-        heading.setStyleSheet("font-size: 12px; font-weight: 700; color: #334155;")
+        heading.setStyleSheet(f"font-size: 12px; font-weight: 700; color: {Color.SLATE_700};")
         layout.addWidget(heading)
 
         fields: dict[str, QLabel] = {}
@@ -153,10 +136,10 @@ class FlightDetailsPanel(QFrame):
             row.setSpacing(6)
             name = QLabel(label)
             name.setFixedWidth(64)
-            name.setStyleSheet("color: #64748b; font-size: 11px;")
+            name.setStyleSheet(f"color: {Color.SLATE_500}; font-size: 11px;")
             value = QLabel("—")
             value.setWordWrap(True)
-            value.setStyleSheet("color: #0f172a; font-size: 11px;")
+            value.setStyleSheet(f"color: {Color.INK}; font-size: 11px;")
             row.addWidget(name)
             row.addWidget(value, stretch=1)
             layout.addLayout(row)
@@ -213,12 +196,10 @@ class FlightDetailsPanel(QFrame):
             fields["Delay"].setText(f"{airport.delay} min")
 
     def set_error(self, message: str) -> None:
-        self._error_label.setText(message)
-        self._error_label.show()
+        self._error_label.set_message(message)
 
     def clear_error(self) -> None:
-        self._error_label.clear()
-        self._error_label.hide()
+        self._error_label.clear_message()
 
     def set_loading(self, loading: bool) -> None:
         self._refresh_button.setDisabled(loading)

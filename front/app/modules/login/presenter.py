@@ -2,13 +2,15 @@ from __future__ import annotations
 
 from PySide6.QtCore import QObject, Signal
 
-from app.api.client import ApiError
+from app.api.client import error_message
+from app.domain.models import Token
 from app.modules.login.model import LoginModel
 from app.modules.login.view import LoginView
+from app.shared.async_worker import AsyncTaskRunner
 from app.shared.session import Session
 
 
-class LoginPresenter(QObject):
+class LoginPresenter(QObject, AsyncTaskRunner):
     login_succeeded = Signal()
 
     def __init__(self, view: LoginView, model: LoginModel, session: Session) -> None:
@@ -44,14 +46,11 @@ class LoginPresenter(QObject):
         self._view.clear_error()
         self._view.set_loading(True)
 
-        try:
-            token = self._model.login(email, password)
-            self._session.set_auth(token.access_token, email)
-            self.login_succeeded.emit()
-        except ApiError as exc:
-            self._view.set_error(exc.message)
-        finally:
-            self._view.set_loading(False)
+        self.run_async(
+            lambda: self._model.login(email, password),
+            lambda token: self._on_auth_success(token, email),
+            self._on_auth_error,
+        )
 
     def _on_register(self) -> None:
         if not self._validate():
@@ -62,12 +61,21 @@ class LoginPresenter(QObject):
         self._view.clear_error()
         self._view.set_loading(True)
 
-        try:
+        def do_register() -> Token:
             self._model.register(email, password)
-            token = self._model.login(email, password)
-            self._session.set_auth(token.access_token, email)
-            self.login_succeeded.emit()
-        except ApiError as exc:
-            self._view.set_error(exc.message)
-        finally:
-            self._view.set_loading(False)
+            return self._model.login(email, password)
+
+        self.run_async(
+            do_register,
+            lambda token: self._on_auth_success(token, email),
+            self._on_auth_error,
+        )
+
+    def _on_auth_success(self, token: Token, email: str) -> None:
+        self._view.set_loading(False)
+        self._session.set_auth(token.access_token, email)
+        self.login_succeeded.emit()
+
+    def _on_auth_error(self, exc: Exception) -> None:
+        self._view.set_loading(False)
+        self._view.set_error(error_message(exc))

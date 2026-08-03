@@ -14,6 +14,8 @@ from PySide6.QtCore import QMargins, Qt
 from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import QLabel, QStackedLayout, QVBoxLayout, QWidget
 
+from app.shared.theme import Color, page_subtitle, page_title
+
 
 class ChartView(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -25,18 +27,14 @@ class ChartView(QWidget):
         layout.setContentsMargins(32, 28, 32, 28)
         layout.setSpacing(16)
 
-        title = QLabel("Flight Charts")
-        title.setStyleSheet("font-size: 22px; font-weight: 700; color: #0f172a;")
-
-        self._subtitle = QLabel("Summary of your latest search results")
-        self._subtitle.setStyleSheet("font-size: 13px; color: #64748b;")
-        self._subtitle.setWordWrap(True)
+        title = page_title("Flight Charts")
+        self._subtitle = page_subtitle("Summary of your latest search results")
 
         self._stack = QStackedLayout()
 
         self._empty_label = QLabel("Run a search first to see charts.")
         self._empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._empty_label.setStyleSheet("color: #64748b; font-size: 16px;")
+        self._empty_label.setStyleSheet(f"color: {Color.SLATE_500}; font-size: 16px;")
 
         self._charts_container = QWidget()
         charts_layout = QVBoxLayout(self._charts_container)

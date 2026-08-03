@@ -9,7 +9,14 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-NAV_ITEMS = ("Search", "Chart", "Advisor", "Bookings")
+from app.shared.theme import Color
+
+NAV_ITEMS = (
+    ("Search", "🔍", "Search for flights by departure airport"),
+    ("Chart", "📊", "Charts for your latest search results"),
+    ("Advisor", "💬", "Ask the AI advisor aviation questions"),
+    ("Bookings", "🎫", "Create and manage your bookings"),
+)
 
 
 class Sidebar(QFrame):
@@ -25,32 +32,32 @@ class Sidebar(QFrame):
         layout.setContentsMargins(16, 24, 16, 24)
         layout.setSpacing(4)
 
-        app_label = QLabel("Flight Assistant")
-        app_label.setObjectName("sidebarTitle")
+        brand_row = QLabel("✈  Flight Assistant")
+        brand_row.setObjectName("sidebarTitle")
+        brand_row.setWordWrap(True)
 
         self._email_label = QLabel()
         self._email_label.setObjectName("sidebarEmail")
         self._email_label.setWordWrap(True)
 
-        layout.addWidget(app_label)
+        layout.addWidget(brand_row)
         layout.addWidget(self._email_label)
         layout.addSpacing(20)
 
         self._nav_buttons: list[QPushButton] = []
-        for index, name in enumerate(NAV_ITEMS):
-            button = QPushButton(name)
+        for index, (name, icon, tooltip) in enumerate(NAV_ITEMS):
+            button = QPushButton(f"{icon}   {name}")
             button.setObjectName("navButton")
             button.setCheckable(True)
             button.setCursor(Qt.CursorShape.PointingHandCursor)
-            if name == "Chart":
-                button.setToolTip("Charts for your latest search results")
+            button.setToolTip(tooltip)
             button.clicked.connect(lambda checked, i=index: self._on_nav_clicked(i))
             layout.addWidget(button)
             self._nav_buttons.append(button)
 
         layout.addStretch()
 
-        self._logout_button = QPushButton("Log out")
+        self._logout_button = QPushButton("⎋  Log out")
         self._logout_button.setObjectName("logoutButton")
         self._logout_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self._logout_button.clicked.connect(self.logout_clicked.emit)
@@ -60,53 +67,54 @@ class Sidebar(QFrame):
 
     def _apply_styles(self) -> None:
         self.setStyleSheet(
-            """
-            QFrame#sidebar {
-                background: #0f172a;
-                border-right: 1px solid #1e293b;
-            }
-            QLabel#sidebarTitle {
-                color: #f8fafc;
-                font-size: 18px;
+            f"""
+            QFrame#sidebar {{
+                background: {Color.SIDEBAR_BG};
+                border-right: 1px solid {Color.SIDEBAR_BORDER};
+            }}
+            QLabel#sidebarTitle {{
+                color: {Color.SIDEBAR_TEXT_BRIGHT};
+                font-size: 17px;
                 font-weight: 700;
-            }
-            QLabel#sidebarEmail {
-                color: #94a3b8;
+            }}
+            QLabel#sidebarEmail {{
+                color: {Color.SIDEBAR_TEXT_MUTED};
                 font-size: 12px;
-            }
-            QPushButton#navButton {
+            }}
+            QPushButton#navButton {{
                 text-align: left;
                 padding: 10px 14px;
                 border: none;
                 border-radius: 8px;
-                color: #cbd5e1;
+                color: {Color.SIDEBAR_TEXT};
                 font-size: 14px;
                 background: transparent;
-            }
-            QPushButton#navButton:hover {
-                background: #1e293b;
-                color: #f1f5f9;
-            }
-            QPushButton#navButton:checked {
-                background: #2563eb;
-                color: #ffffff;
+            }}
+            QPushButton#navButton:hover {{
+                background: {Color.SIDEBAR_HOVER};
+                color: {Color.SIDEBAR_TEXT_BRIGHT};
+            }}
+            QPushButton#navButton:checked {{
+                background: {Color.PRIMARY};
+                color: {Color.WHITE};
                 font-weight: 600;
-            }
-            QPushButton#navButton:disabled {
+            }}
+            QPushButton#navButton:disabled {{
                 color: #475569;
-            }
-            QPushButton#logoutButton {
+            }}
+            QPushButton#logoutButton {{
+                text-align: left;
                 padding: 10px 14px;
                 border: 1px solid #334155;
                 border-radius: 8px;
                 color: #fca5a5;
                 background: transparent;
                 font-size: 13px;
-            }
-            QPushButton#logoutButton:hover {
-                background: #1e293b;
+            }}
+            QPushButton#logoutButton:hover {{
+                background: {Color.SIDEBAR_HOVER};
                 border-color: #475569;
-            }
+            }}
             """
         )
 

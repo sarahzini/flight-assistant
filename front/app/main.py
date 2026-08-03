@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QApplication
 
 from app.api.client import ApiClient
 from app.shared.app_state import AppState
+from app.shared.async_worker import shutdown_workers
 from app.shared.session import Session
 from app.shell.login_window import LoginWindow
 from app.shell.main_window import MainWindow
@@ -22,6 +23,10 @@ class FlightAssistantApp:
     def start(self) -> int:
         app = QApplication(sys.argv)
         app.setApplicationName("Flight Assistant")
+        # Order matters: wait for any in-flight background call to finish
+        # *before* Qt starts destroying windows/presenters, or a still-running
+        # worker thread could be torn down mid-flight and crash the process.
+        app.aboutToQuit.connect(shutdown_workers)
         app.aboutToQuit.connect(self._client.close)
 
         self._login_window = LoginWindow(self._session, self._client)

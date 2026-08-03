@@ -1,17 +1,27 @@
 from __future__ import annotations
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QListWidget,
-    QPushButton,
     QTextEdit,
     QVBoxLayout,
     QWidget,
 )
 
 from app.domain.models import AdvisorAnswer
+from app.shared.theme import (
+    Color,
+    ErrorLabel,
+    PrimaryButton,
+    StatusLabel,
+    field_label,
+    input_style,
+    page_subtitle,
+    page_title,
+    section_heading_style,
+)
 
 
 class AdvisorView(QWidget):
@@ -27,96 +37,60 @@ class AdvisorView(QWidget):
         layout.setContentsMargins(32, 28, 32, 28)
         layout.setSpacing(16)
 
-        title = QLabel("AI Advisor")
-        title.setStyleSheet("font-size: 22px; font-weight: 700; color: #0f172a;")
-
-        subtitle = QLabel(
+        title = page_title("AI Advisor")
+        subtitle = page_subtitle(
             "Ask aviation questions — answered from the knowledge base (RAG). "
             "Try: “What is a connection?” or “Baggage rules?”"
         )
-        subtitle.setWordWrap(True)
-        subtitle.setStyleSheet("font-size: 13px; color: #64748b;")
 
-        question_label = QLabel("Your question")
-        question_label.setStyleSheet("color: #475569; font-size: 13px;")
+        question_label = field_label("Your question")
 
         self._question_input = QTextEdit()
         self._question_input.setPlaceholderText("Type your question here…")
         self._question_input.setFixedHeight(100)
-        self._question_input.setStyleSheet(
-            """
-            QTextEdit {
-                padding: 10px;
-                border: 1px solid #cbd5e1;
-                border-radius: 8px;
-                font-size: 14px;
-                background: #ffffff;
-            }
-            """
-        )
+        self._question_input.setStyleSheet(input_style())
 
         button_row = QHBoxLayout()
-        self._ask_button = QPushButton("Ask")
-        self._ask_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._ask_button.setStyleSheet(
-            """
-            QPushButton {
-                background: #2563eb;
-                color: white;
-                border: none;
-                border-radius: 8px;
-                padding: 10px 28px;
-                font-size: 14px;
-                font-weight: 600;
-            }
-            QPushButton:hover { background: #1d4ed8; }
-            QPushButton:disabled { background: #93c5fd; }
-            """
-        )
+        self._ask_button = PrimaryButton("Ask")
         button_row.addWidget(self._ask_button)
         button_row.addStretch()
 
-        self._error_label = QLabel()
-        self._error_label.setStyleSheet("color: #dc2626; font-size: 13px;")
-        self._error_label.setWordWrap(True)
-        self._error_label.hide()
-
-        self._status_label = QLabel()
-        self._status_label.setStyleSheet("color: #64748b; font-size: 13px;")
+        self._error_label = ErrorLabel()
+        self._status_label = StatusLabel()
 
         answer_label = QLabel("Answer")
-        answer_label.setStyleSheet("color: #475569; font-size: 13px; font-weight: 600;")
+        answer_label.setStyleSheet(section_heading_style())
 
         self._answer_output = QTextEdit()
         self._answer_output.setReadOnly(True)
         self._answer_output.setPlaceholderText("The answer will appear here…")
         self._answer_output.setStyleSheet(
-            """
-            QTextEdit {
+            f"""
+            QTextEdit {{
                 padding: 12px;
-                border: 1px solid #e2e8f0;
+                border: 1px solid {Color.SLATE_200};
                 border-radius: 8px;
                 font-size: 14px;
-                background: #ffffff;
-                color: #0f172a;
-            }
+                background: {Color.WHITE};
+                color: {Color.INK};
+            }}
             """
         )
 
         sources_label = QLabel("Sources")
-        sources_label.setStyleSheet("color: #475569; font-size: 13px; font-weight: 600;")
+        sources_label.setStyleSheet(section_heading_style())
 
         self._sources_list = QListWidget()
         self._sources_list.setMaximumHeight(120)
         self._sources_list.setStyleSheet(
-            """
-            QListWidget {
-                background: #f8fafc;
-                border: 1px solid #e2e8f0;
+            f"""
+            QListWidget {{
+                background: {Color.SLATE_50};
+                border: 1px solid {Color.SLATE_200};
                 border-radius: 8px;
                 font-size: 13px;
                 padding: 4px;
-            }
+            }}
             """
         )
 
@@ -139,12 +113,10 @@ class AdvisorView(QWidget):
         return self._question_input.toPlainText().strip()
 
     def set_error(self, message: str) -> None:
-        self._error_label.setText(message)
-        self._error_label.show()
+        self._error_label.set_message(message)
 
     def clear_error(self) -> None:
-        self._error_label.clear()
-        self._error_label.hide()
+        self._error_label.clear_message()
 
     def set_loading(self, loading: bool) -> None:
         self._ask_button.setDisabled(loading)

@@ -4,9 +4,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QHeaderView,
-    QLabel,
     QLineEdit,
-    QPushButton,
     QSpinBox,
     QSplitter,
     QTableWidget,
@@ -17,6 +15,16 @@ from PySide6.QtWidgets import (
 
 from app.domain.models import Flight
 from app.modules.details.view import FlightDetailsPanel
+from app.shared.theme import (
+    ErrorLabel,
+    PrimaryButton,
+    StatusLabel,
+    field_label,
+    input_style,
+    page_subtitle,
+    page_title,
+    table_style,
+)
 
 
 class SearchView(QWidget):
@@ -28,6 +36,7 @@ class SearchView(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.details_panel = FlightDetailsPanel()
+        self._sizes_initialized = False
         self._build_ui()
         self._wire_signals()
 
@@ -36,53 +45,31 @@ class SearchView(QWidget):
         layout.setContentsMargins(32, 28, 32, 28)
         layout.setSpacing(16)
 
-        title = QLabel("Search Flights")
-        title.setStyleSheet("font-size: 22px; font-weight: 700; color: #0f172a;")
-
-        subtitle = QLabel(
+        title = page_title("Search Flights")
+        subtitle = page_subtitle(
             "Search by departure airport — click a row; details appear on the right"
         )
-        subtitle.setWordWrap(True)
-        subtitle.setStyleSheet("font-size: 13px; color: #64748b;")
 
         form_row = QHBoxLayout()
         form_row.setSpacing(12)
 
-        dep_label = QLabel("Departure IATA")
-        dep_label.setStyleSheet("color: #475569; font-size: 13px;")
+        dep_label = field_label("Departure IATA")
 
         self._dep_input = QLineEdit()
         self._dep_input.setPlaceholderText("TLV")
         self._dep_input.setMaxLength(3)
         self._dep_input.setFixedWidth(100)
-        self._dep_input.setStyleSheet(self._input_style())
+        self._dep_input.setStyleSheet(input_style())
 
-        limit_label = QLabel("Limit")
-        limit_label.setStyleSheet("color: #475569; font-size: 13px;")
+        limit_label = field_label("Limit")
 
         self._limit_spin = QSpinBox()
         self._limit_spin.setRange(1, 20)
         self._limit_spin.setValue(5)
         self._limit_spin.setFixedWidth(80)
-        self._limit_spin.setStyleSheet(self._input_style())
+        self._limit_spin.setStyleSheet(input_style())
 
-        self._search_button = QPushButton("Search")
-        self._search_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._search_button.setStyleSheet(
-            """
-            QPushButton {
-                background: #2563eb;
-                color: white;
-                border: none;
-                border-radius: 8px;
-                padding: 10px 24px;
-                font-size: 14px;
-                font-weight: 600;
-            }
-            QPushButton:hover { background: #1d4ed8; }
-            QPushButton:disabled { background: #93c5fd; }
-            """
-        )
+        self._search_button = PrimaryButton("Search")
 
         dep_box = QVBoxLayout()
         dep_box.setSpacing(4)
@@ -99,12 +86,8 @@ class SearchView(QWidget):
         form_row.addStretch()
         form_row.addWidget(self._search_button, alignment=Qt.AlignmentFlag.AlignBottom)
 
-        self._error_label = QLabel()
-        self._error_label.setStyleSheet("color: #dc2626; font-size: 13px;")
-        self._error_label.hide()
-
-        self._status_label = QLabel()
-        self._status_label.setStyleSheet("color: #64748b; font-size: 13px;")
+        self._error_label = ErrorLabel()
+        self._status_label = StatusLabel()
 
         self._table = QTableWidget(0, len(self._COLUMNS))
         self._table.setHorizontalHeaderLabels(list(self._COLUMNS))
@@ -115,55 +98,33 @@ class SearchView(QWidget):
         self._table.verticalHeader().setVisible(False)
         self._table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self._table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
-        self._table.setStyleSheet(
-            """
-            QTableWidget {
-                background: #ffffff;
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                gridline-color: #f1f5f9;
-                font-size: 13px;
-            }
-            QHeaderView::section {
-                background: #f8fafc;
-                color: #475569;
-                font-weight: 600;
-                padding: 8px;
-                border: none;
-                border-bottom: 1px solid #e2e8f0;
-            }
-            QTableWidget::item:selected {
-                background: #dbeafe;
-                color: #0f172a;
-            }
-            """
-        )
+        self._table.setStyleSheet(table_style())
 
-        splitter = QSplitter(Qt.Orientation.Horizontal)
-        splitter.addWidget(self._table)
-        splitter.addWidget(self.details_panel)
-        splitter.setStretchFactor(0, 1)
-        splitter.setStretchFactor(1, 0)
-        splitter.setCollapsible(0, False)
-        splitter.setCollapsible(1, False)
-        splitter.setSizes([720, FlightDetailsPanel.PANEL_WIDTH])
-        splitter.setHandleWidth(1)
+        self._splitter = QSplitter(Qt.Orientation.Horizontal)
+        self._splitter.addWidget(self._table)
+        self._splitter.addWidget(self.details_panel)
+        self._splitter.setStretchFactor(0, 1)
+        self._splitter.setStretchFactor(1, 0)
+        self._splitter.setCollapsible(0, False)
+        self._splitter.setCollapsible(1, False)
+        self._splitter.setHandleWidth(1)
 
         layout.addWidget(title)
         layout.addWidget(subtitle)
         layout.addLayout(form_row)
         layout.addWidget(self._error_label)
         layout.addWidget(self._status_label)
-        layout.addWidget(splitter, stretch=1)
+        layout.addWidget(self._splitter, stretch=1)
 
-    def _input_style(self) -> str:
-        return """
-            padding: 8px 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 14px;
-            background: #ffffff;
-        """
+    def showEvent(self, event) -> None:
+        super().showEvent(event)
+        # The available width isn't known until the widget is actually shown,
+        # so the table/details split is computed here instead of using a
+        # hardcoded pixel width that would look wrong on other screen sizes.
+        if not self._sizes_initialized and self.width() > 0:
+            table_width = max(self.width() - FlightDetailsPanel.PANEL_WIDTH - 40, 200)
+            self._splitter.setSizes([table_width, FlightDetailsPanel.PANEL_WIDTH])
+            self._sizes_initialized = True
 
     def _wire_signals(self) -> None:
         self._search_button.clicked.connect(self.search_clicked.emit)
@@ -184,12 +145,10 @@ class SearchView(QWidget):
         return self._limit_spin.value()
 
     def set_error(self, message: str) -> None:
-        self._error_label.setText(message)
-        self._error_label.show()
+        self._error_label.set_message(message)
 
     def clear_error(self) -> None:
-        self._error_label.clear()
-        self._error_label.hide()
+        self._error_label.clear_message()
 
     def set_loading(self, loading: bool) -> None:
         self._search_button.setDisabled(loading)

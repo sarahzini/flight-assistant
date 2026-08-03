@@ -1,15 +1,19 @@
 from __future__ import annotations
 
+from typing import Callable
+
 from PySide6.QtCore import QObject, Signal
 
-from app.api.client import ApiError
+from app.api.client import ApiError, error_message
+from app.domain.models import Booking
 from app.modules.booking.model import BookingModel
 from app.modules.booking.view import BookingView
 from app.shared.app_state import AppState
+from app.shared.async_worker import AsyncTaskRunner
 from app.shared.session import Session
 
 
-class BookingPresenter(QObject):
+class BookingPresenter(QObject, AsyncTaskRunner):
     auth_expired = Signal()
 
     def __init__(
@@ -38,13 +42,11 @@ class BookingPresenter(QObject):
         self._view.clear_error()
         self._view.set_loading(True)
 
-        try:
-            bookings = self._model.list_bookings()
-            self._view.populate_table(bookings)
-        except ApiError as exc:
-            self._handle_api_error(exc)
-        finally:
-            self._view.set_loading(False)
+        self.run_async(self._model.list_bookings, self._on_list_success, self._on_error)
+
+    def _on_list_success(self, bookings: list[Booking]) -> None:
+        self._view.set_loading(False)
+        self._view.populate_table(bookings)
 
     def _prefill_from_selection(self) -> None:
         flight = self._app_state.selected_flight
@@ -68,16 +70,17 @@ class BookingPresenter(QObject):
         self._view.clear_error()
         self._view.set_loading(True)
 
-        try:
+        def do_create() -> list[Booking]:
             self._model.create(flight_number, passenger_name)
-            self._view.clear_passenger()
-            bookings = self._model.list_bookings()
-            self._view.populate_table(bookings)
-            self._view.set_status("Booking created")
-        except ApiError as exc:
-            self._handle_api_error(exc)
-        finally:
-            self._view.set_loading(False)
+            return self._model.list_bookings()
+
+        self.run_async(do_create, self._on_create_success, self._on_error)
+
+    def _on_create_success(self, bookings: list[Booking]) -> None:
+        self._view.set_loading(False)
+        self._view.clear_passenger()
+        self._view.populate_table(bookings)
+        self._view.set_status("Booking created")
 
     def _on_confirm(self, booking_id: str) -> None:
         self._run_command(lambda: self._model.confirm(booking_id), "Booking confirmed")
@@ -85,22 +88,23 @@ class BookingPresenter(QObject):
     def _on_cancel(self, booking_id: str) -> None:
         self._run_command(lambda: self._model.cancel(booking_id), "Booking cancelled")
 
-    def _run_command(self, action, success_message: str) -> None:
+    def _run_command(self, action: Callable[[], Booking], success_message: str) -> None:
         if not self._ensure_auth():
             return
 
         self._view.clear_error()
         self._view.set_loading(True)
 
-        try:
+        def do_run() -> list[Booking]:
             action()
-            bookings = self._model.list_bookings()
+            return self._model.list_bookings()
+
+        def on_success(bookings: list[Booking]) -> None:
+            self._view.set_loading(False)
             self._view.populate_table(bookings)
             self._view.set_status(success_message)
-        except ApiError as exc:
-            self._handle_api_error(exc)
-        finally:
-            self._view.set_loading(False)
+
+        self.run_async(do_run, on_success, self._on_error)
 
     def _ensure_auth(self) -> bool:
         if self._session.is_authenticated():
@@ -108,8 +112,9 @@ class BookingPresenter(QObject):
         self.auth_expired.emit()
         return False
 
-    def _handle_api_error(self, exc: ApiError) -> None:
-        if exc.status_code == 401:
+    def _on_error(self, exc: Exception) -> None:
+        self._view.set_loading(False)
+        if isinstance(exc, ApiError) and exc.status_code == 401:
             self.auth_expired.emit()
             return
-        self._view.set_error(exc.message)
+        self._view.set_error(error_message(exc))

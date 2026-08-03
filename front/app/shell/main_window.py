@@ -19,6 +19,7 @@ from app.modules.search.presenter import SearchPresenter
 from app.modules.search.view import SearchView
 from app.shared.app_state import AppState
 from app.shared.session import Session
+from app.shared.theme import Color
 from app.shell.sidebar import Sidebar
 
 SEARCH_PAGE = 0
@@ -74,13 +75,13 @@ class MainWindow(QMainWindow):
         self._stack.setCurrentIndex(SEARCH_PAGE)
 
         self.setStyleSheet(
-            """
-            QWidget#mainBackground {
-                background: #f1f5f9;
-            }
-            QStackedWidget#contentStack {
-                background: #f8fafc;
-            }
+            f"""
+            QWidget#mainBackground {{
+                background: {Color.SLATE_100};
+            }}
+            QStackedWidget#contentStack {{
+                background: {Color.SLATE_50};
+            }}
             """
         )
 
