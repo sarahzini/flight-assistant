@@ -60,6 +60,11 @@ class Flight:
             arrival=Airport.from_dict(arrival_data),
         )
 
+    @property
+    def is_refreshable(self) -> bool:
+        """Domain rule: a flight can only be re-fetched by number if it has one."""
+        return bool(self.flight_number)
+
 
 class BookingStatus(str, Enum):
     CREATED = "created"
@@ -116,6 +121,20 @@ class Booking:
             status=BookingStatus(data["status"]),
             user_id=data.get("user_id"),
         )
+
+    @property
+    def can_confirm(self) -> bool:
+        """Domain rule: only a freshly created booking can be confirmed.
+
+        Lives here (Model) rather than in the View, so the View only ever
+        reads a plain boolean instead of encoding booking-state rules itself.
+        """
+        return self.status == BookingStatus.CREATED
+
+    @property
+    def can_cancel(self) -> bool:
+        """Domain rule: any booking that isn't already cancelled can be cancelled."""
+        return self.status != BookingStatus.CANCELLED
 
 
 @dataclass

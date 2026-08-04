@@ -44,6 +44,12 @@ class SearchPresenter(QObject, AsyncTaskRunner):
         self._app_state.set_search_results(flights)
         self._app_state.set_selected_flight(None)
         self._view.populate_table(flights)
+        if flights:
+            self._view.set_status(
+                f"{len(flights)} flight(s) found — click a row for details on the right"
+            )
+        else:
+            self._view.set_status("No flights found for this airport")
         self.selection_changed.emit()
 
     def _on_search_error(self, exc: Exception) -> None:

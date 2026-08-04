@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from app.domain.models import Booking, BookingStatus
+from app.domain.models import Booking
 from app.shared.theme import (
     DangerOutlineButton,
     ErrorLabel,
@@ -158,13 +158,13 @@ class BookingView(QWidget):
             actions_layout.setSpacing(6)
 
             confirm_btn = SuccessButton("Confirm")
-            confirm_btn.setEnabled(booking.status == BookingStatus.CREATED)
+            confirm_btn.setEnabled(booking.can_confirm)
             confirm_btn.clicked.connect(
                 lambda checked=False, bid=booking.booking_id: self.confirm_clicked.emit(bid)
             )
 
             cancel_btn = DangerOutlineButton("Cancel")
-            cancel_btn.setEnabled(booking.status != BookingStatus.CANCELLED)
+            cancel_btn.setEnabled(booking.can_cancel)
             cancel_btn.clicked.connect(
                 lambda checked=False, bid=booking.booking_id: self.cancel_clicked.emit(bid)
             )

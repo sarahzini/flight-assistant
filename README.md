@@ -26,14 +26,14 @@ flight-assistant/
 │ ├── requirements.txt
 │ ├── .env.local # local dev config: AviationStack key, local DB URL, SECRET_KEY (not committed)
 │ └── .env.cloud # cloud config: AviationStack key, Aiven DB URL, SECRET_KEY (not committed)
-└── front/ # PySide6 desktop app (Phase 0 complete — see Front-end below)
+└── front/ # PySide6 desktop app — fully implemented (see Front-end below)
     ├── app/
-    │   ├── main.py              # QApplication entry + health check
+    │   ├── main.py              # QApplication entry, login↔main window transitions, graceful shutdown
     │   ├── config.py            # BASE_URL = http://127.0.0.1:8000
     │   ├── api/                 # httpx client + endpoint wrappers
     │   ├── domain/models.py     # dataclasses mirroring backend models
-    │   ├── shared/              # Session (JWT), AppState (cross-module data)
-    │   ├── shell/               # LoginWindow, MainWindow (Phase 1–2)
+    │   ├── shared/              # Session (JWT), AppState, AsyncTaskRunner (off-UI-thread calls), theme
+    │   ├── shell/               # LoginWindow, MainWindow, Sidebar, Search+Details composition
     │   └── modules/             # MVP modules: login, search, details, chart, booking, advisor
     └── requirements.txt
 
@@ -121,7 +121,7 @@ python -m app.main
 
 You should see the login window. A green “Connected to backend” status means the API is reachable. After login or register, the main shell opens with sidebar navigation; **Log out** returns to the login screen.
 
-### Phase 0 — what’s in place
+### Shared front-end infrastructure
 
 | Piece | Location | Purpose |
 |---|---|---|
@@ -134,6 +134,7 @@ You should see the login window. A green “Connected to backend” status means
 | Async worker | `front/app/shared/async_worker.py` | Runs API calls off the Qt UI thread so the app never freezes (esp. the slow AI Advisor call) |
 | Theme | `front/app/shared/theme.py` | Shared colors, spacing/typography scale, and reusable styled widgets (buttons, labels, inputs) used by every screen |
 | Shell / modules | `front/app/shell/`, `front/app/modules/` | Login, Search+Details, Chart, Bookings, Advisor |
+| Shell composition | `front/app/shell/search_with_details.py` | Places the independent Search and Details microfrontends side by side — composition lives in the shell, not inside either module, to keep microfrontends decoupled |
 
 **MVP modules:** Login, Search (+ inline Details), Chart, Bookings, AI Advisor.
 

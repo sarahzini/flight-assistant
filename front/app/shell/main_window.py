@@ -14,12 +14,14 @@ from app.modules.chart.presenter import ChartPresenter
 from app.modules.chart.view import ChartView
 from app.modules.details.model import DetailsModel
 from app.modules.details.presenter import DetailsPresenter
+from app.modules.details.view import FlightDetailsPanel
 from app.modules.search.model import SearchModel
 from app.modules.search.presenter import SearchPresenter
 from app.modules.search.view import SearchView
 from app.shared.app_state import AppState
 from app.shared.session import Session
 from app.shared.theme import Color
+from app.shell.search_with_details import SearchWithDetailsContainer
 from app.shell.sidebar import Sidebar
 
 SEARCH_PAGE = 0
@@ -85,19 +87,21 @@ class MainWindow(QMainWindow):
             """
         )
 
-    def _build_search_page(self) -> SearchView:
-        view = SearchView()
+    def _build_search_page(self) -> SearchWithDetailsContainer:
+        # Search and Details are independent microfrontends — neither imports
+        # the other. The shell is what composes them side by side.
+        search_view = SearchView()
+        details_panel = FlightDetailsPanel()
+
         search_model = SearchModel(self._client)
-        self._search_presenter = SearchPresenter(view, search_model, self._app_state)
+        self._search_presenter = SearchPresenter(search_view, search_model, self._app_state)
 
         details_model = DetailsModel(self._client)
-        self._details_presenter = DetailsPresenter(
-            view.details_panel, details_model, self._app_state
-        )
+        self._details_presenter = DetailsPresenter(details_panel, details_model, self._app_state)
 
         self._search_presenter.selection_changed.connect(self._details_presenter.refresh)
         self._search_presenter.selection_changed.connect(self._on_search_state_changed)
-        return view
+        return SearchWithDetailsContainer(search_view, details_panel)
 
     def _build_chart_page(self) -> ChartView:
         view = ChartView()

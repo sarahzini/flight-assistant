@@ -6,7 +6,6 @@ from PySide6.QtWidgets import (
     QHeaderView,
     QLineEdit,
     QSpinBox,
-    QSplitter,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -14,7 +13,6 @@ from PySide6.QtWidgets import (
 )
 
 from app.domain.models import Flight
-from app.modules.details.view import FlightDetailsPanel
 from app.shared.theme import (
     ErrorLabel,
     PrimaryButton,
@@ -28,6 +26,11 @@ from app.shared.theme import (
 
 
 class SearchView(QWidget):
+    """The Search microfrontend: fully self-contained, with no knowledge of
+    the Details microfrontend. Composing it next to a details panel is the
+    shell's job (see ``app/shell/search_with_details.py``), not this View's.
+    """
+
     search_clicked = Signal()
     row_selected = Signal(int)
 
@@ -35,8 +38,6 @@ class SearchView(QWidget):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.details_panel = FlightDetailsPanel()
-        self._sizes_initialized = False
         self._build_ui()
         self._wire_signals()
 
@@ -100,31 +101,12 @@ class SearchView(QWidget):
         self._table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         self._table.setStyleSheet(table_style())
 
-        self._splitter = QSplitter(Qt.Orientation.Horizontal)
-        self._splitter.addWidget(self._table)
-        self._splitter.addWidget(self.details_panel)
-        self._splitter.setStretchFactor(0, 1)
-        self._splitter.setStretchFactor(1, 0)
-        self._splitter.setCollapsible(0, False)
-        self._splitter.setCollapsible(1, False)
-        self._splitter.setHandleWidth(1)
-
         layout.addWidget(title)
         layout.addWidget(subtitle)
         layout.addLayout(form_row)
         layout.addWidget(self._error_label)
         layout.addWidget(self._status_label)
-        layout.addWidget(self._splitter, stretch=1)
-
-    def showEvent(self, event) -> None:
-        super().showEvent(event)
-        # The available width isn't known until the widget is actually shown,
-        # so the table/details split is computed here instead of using a
-        # hardcoded pixel width that would look wrong on other screen sizes.
-        if not self._sizes_initialized and self.width() > 0:
-            table_width = max(self.width() - FlightDetailsPanel.PANEL_WIDTH - 40, 200)
-            self._splitter.setSizes([table_width, FlightDetailsPanel.PANEL_WIDTH])
-            self._sizes_initialized = True
+        layout.addWidget(self._table, stretch=1)
 
     def _wire_signals(self) -> None:
         self._search_button.clicked.connect(self.search_clicked.emit)
@@ -160,6 +142,9 @@ class SearchView(QWidget):
         self._status_label.setText(message)
 
     def populate_table(self, flights: list[Flight]) -> None:
+        """Pure rendering: fills the table from already-decided data. Deciding
+        *what status message to show* is the Presenter's job, not the View's.
+        """
         self._table.setRowCount(len(flights))
         for row, flight in enumerate(flights):
             route = f"{flight.departure.iata or '?'} → {flight.arrival.iata or '?'}"
@@ -174,10 +159,7 @@ class SearchView(QWidget):
                 item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 self._table.setItem(row, col, item)
 
-        if flights:
-            self.set_status(f"{len(flights)} flight(s) found — click a row for details on the right")
-        else:
-            self.set_status("No flights found for this airport")
+        if not flights:
             self._table.clearSelection()
 
     def clear_table(self) -> None:

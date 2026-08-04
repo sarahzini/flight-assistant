@@ -177,7 +177,7 @@ class FlightDetailsPanel(QFrame):
         self._placeholder.hide()
         self._content.show()
         self._scroll.show()
-        self._refresh_button.setVisible(bool(flight.flight_number))
+        self._refresh_button.setVisible(flight.is_refreshable)
 
     def _fill_airport_block(self, fields: dict[str, QLabel], airport) -> None:
         if airport is None:
