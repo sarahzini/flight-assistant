@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QHeaderView,
+    QLabel,
     QLineEdit,
     QSpinBox,
     QTableWidget,
@@ -13,6 +14,7 @@ from PySide6.QtWidgets import (
 )
 
 from app.domain.models import Flight
+from app.shared.icon_cache import get_cached_pixmap
 from app.shared.theme import (
     ErrorLabel,
     PrimaryButton,
@@ -34,7 +36,7 @@ class SearchView(QWidget):
     search_clicked = Signal()
     row_selected = Signal(int)
 
-    _COLUMNS = ("Flight", "Airline", "Route", "Status")
+    _COLUMNS = ("", "Flight", "Airline", "Route", "Status")
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -98,7 +100,8 @@ class SearchView(QWidget):
         self._table.setAlternatingRowColors(True)
         self._table.verticalHeader().setVisible(False)
         self._table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self._table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self._table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
+        self._table.setColumnWidth(0, 36)
         self._table.setStyleSheet(table_style())
 
         layout.addWidget(title)
@@ -149,6 +152,7 @@ class SearchView(QWidget):
         for row, flight in enumerate(flights):
             route = f"{flight.departure.iata or '?'} → {flight.arrival.iata or '?'}"
             values = (
+                "",
                 flight.flight_number or "—",
                 (flight.airline.name if flight.airline else None) or "—",
                 route,
@@ -158,6 +162,14 @@ class SearchView(QWidget):
                 item = QTableWidgetItem(value)
                 item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 self._table.setItem(row, col, item)
+
+            if flight.airline and flight.airline.icon_url:
+                pixmap = get_cached_pixmap(flight.airline.icon_url, size=24)
+                if pixmap is not None:
+                    icon_label = QLabel()
+                    icon_label.setPixmap(pixmap)
+                    icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                    self._table.setCellWidget(row, 0, icon_label)
 
         if not flights:
             self._table.clearSelection()

@@ -10,6 +10,9 @@ from app.modules.advisor.view import AdvisorView
 from app.modules.booking.model import BookingModel
 from app.modules.booking.presenter import BookingPresenter
 from app.modules.booking.view import BookingView
+from app.modules.booking_history.model import BookingHistoryModel
+from app.modules.booking_history.presenter import BookingHistoryPresenter
+from app.modules.booking_history.view import BookingHistoryPanel
 from app.modules.chart.presenter import ChartPresenter
 from app.modules.chart.view import ChartView
 from app.modules.details.model import DetailsModel
@@ -21,6 +24,7 @@ from app.modules.search.view import SearchView
 from app.shared.app_state import AppState
 from app.shared.session import Session
 from app.shared.theme import Color
+from app.shell.bookings_with_history import BookingsWithHistoryContainer
 from app.shell.search_with_details import SearchWithDetailsContainer
 from app.shell.sidebar import Sidebar
 
@@ -114,14 +118,23 @@ class MainWindow(QMainWindow):
         self._advisor_presenter = AdvisorPresenter(view, model)
         return view
 
-    def _build_bookings_page(self) -> BookingView:
+    def _build_bookings_page(self) -> BookingsWithHistoryContainer:
+        # Booking and Booking History are independent microfrontends — same
+        # composition pattern as Search + Details above.
         view = BookingView()
         model = BookingModel(self._client)
         self._booking_presenter = BookingPresenter(
             view, model, self._session, self._app_state
         )
         self._booking_presenter.auth_expired.connect(self.logout_requested.emit)
-        return view
+
+        history_panel = BookingHistoryPanel()
+        history_model = BookingHistoryModel(self._client)
+        self._booking_history_presenter = BookingHistoryPresenter(history_panel, history_model)
+
+        view.history_clicked.connect(self._booking_history_presenter.load)
+
+        return BookingsWithHistoryContainer(view, history_panel)
 
     def _on_search_state_changed(self) -> None:
         if self._stack.currentIndex() == CHART_PAGE:

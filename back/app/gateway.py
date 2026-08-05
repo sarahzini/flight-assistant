@@ -32,9 +32,10 @@ def parse_flight(raw: dict) -> Flight:
         flight_status=raw.get("flight_status"),
         flight_number=flight_raw.get("iata"),
         airline=Airline(
-            name=airline_raw.get("name"),
-            iata=airline_raw.get("iata"),
-        ),
+    name=raw["airline"]["name"],
+    iata=raw["airline"]["iata"],
+    icon_url=get_airline_icon(raw["airline"]["iata"]),
+),
         departure=Airport(
             name=departure_raw.get("airport"),
             iata=departure_raw.get("iata"),
@@ -82,3 +83,16 @@ def fetch_advisor_completion(prompt: str) -> str:
     )
     response.raise_for_status()
     return response.json()["response"]
+
+DEFAULT_AIRLINE_ICON = "https://res.cloudinary.com/tcydjewx/image/upload/v1785960706/Screenshot_2026-08-05_230643_dkofil.png"
+
+AIRLINE_ICONS: dict[str, str] = {
+    "LY": "https://res.cloudinary.com/tcydjewx/image/upload/v1785960706/Screenshot_2026-08-05_230608_mceiw0.png",
+}
+
+
+def get_airline_icon(iata: str | None) -> str:
+    """Return a Cloudinary icon URL for the airline, falling back to a generic plane."""
+    if iata and iata in AIRLINE_ICONS:
+        return AIRLINE_ICONS[iata]
+    return DEFAULT_AIRLINE_ICON

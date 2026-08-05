@@ -31,11 +31,15 @@ class Airport:
 class Airline:
     name: Optional[str] = None
     iata: Optional[str] = None
+    icon_url: Optional[str] = None
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Airline:
-        return cls(name=data.get("name"), iata=data.get("iata"))
-
+        return cls(
+            name=data.get("name"),
+            iata=data.get("iata"),
+            icon_url=data.get("icon_url"),
+        )
 
 @dataclass
 class Flight:

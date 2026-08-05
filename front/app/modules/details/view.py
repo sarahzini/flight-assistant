@@ -6,19 +6,22 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QScrollArea,
     QVBoxLayout,
     QWidget,
 )
 
 from app.domain.models import Flight
-from app.shared.theme import Color, ErrorLabel, GhostIconButton
+from app.shared.theme import Color, ErrorLabel, GhostIconButton, SecondaryButton, input_style
 
 
 class FlightDetailsPanel(QFrame):
-    """Compact side panel for the flight selected in the search table."""
+    """Compact side panel for the flight selected in the search table,
+    or looked up manually by flight number."""
 
     refresh_clicked = Signal()
+    lookup_requested = Signal(str)
 
     PANEL_WIDTH = 320
 
@@ -56,14 +59,24 @@ class FlightDetailsPanel(QFrame):
         header.addStretch()
         header.addWidget(self._refresh_button)
 
+        lookup_row = QHBoxLayout()
+        lookup_row.setSpacing(6)
+        self._lookup_input = QLineEdit()
+        self._lookup_input.setPlaceholderText("e.g. LY4257")
+        self._lookup_input.setStyleSheet(input_style())
+        self._lookup_button = SecondaryButton("Look up")
+        lookup_row.addWidget(self._lookup_input, stretch=1)
+        lookup_row.addWidget(self._lookup_button)
+
+        self._lookup_input.returnPressed.connect(self._emit_lookup)
+        self._lookup_button.clicked.connect(self._emit_lookup)
+
         self._placeholder = QLabel(
-            "Select a flight in the table to view airline, route, times, and delays."
+            "Select a flight in the table, or look one up by number above."
         )
         self._placeholder.setWordWrap(True)
         self._placeholder.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self._placeholder.setStyleSheet(
-            f"color: {Color.SLATE_500}; font-size: 12px; line-height: 1.4;"
-        )
+        self._placeholder.setStyleSheet(f"color: {Color.SLATE_500}; font-size: 12px;")
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
@@ -97,17 +110,22 @@ class FlightDetailsPanel(QFrame):
         self._error_label.setStyleSheet(f"color: {Color.DANGER}; font-size: 12px;")
 
         outer.addLayout(header)
+        outer.addLayout(lookup_row)
         outer.addWidget(self._placeholder)
         outer.addWidget(scroll, stretch=1)
         outer.addWidget(self._error_label)
 
         self._scroll = scroll
 
+    def _emit_lookup(self) -> None:
+        flight_number = self._lookup_input.text().strip().upper()
+        if flight_number:
+            self.lookup_requested.emit(flight_number)
+
     def _add_summary_field(self, grid: QGridLayout, row: int, col: int, label: str) -> QLabel:
         box = QVBoxLayout()
         box.setSpacing(2)
         name = QLabel(label)
-        name.setStyleSheet(f"color: {Color.SLATE_500}; font-size: 10px; text-transform: uppercase;")
         value = QLabel("—")
         value.setWordWrap(True)
         value.setStyleSheet(f"color: {Color.INK}; font-size: 13px; font-weight: 600;")
@@ -203,6 +221,8 @@ class FlightDetailsPanel(QFrame):
 
     def set_loading(self, loading: bool) -> None:
         self._refresh_button.setDisabled(loading)
+        self._lookup_input.setDisabled(loading)
+        self._lookup_button.setDisabled(loading)
 
 
 DetailsView = FlightDetailsPanel

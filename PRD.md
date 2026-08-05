@@ -34,7 +34,7 @@ without prior expertise.
   (SearchModule, DetailsModule, ChartModule, AIAdvisorModule, BookingModule)
 - **Gateway**: single entry point to AviationStack, Ollama, (Cloudinary optional)
 - **Back**: FastAPI, CQRS (Command = event writes, Query = reconstructed state reads)
-- **Persistence**: PostgreSQL (somee.com target, local Postgres in dev), Event Sourcing
+-**Persistence**: PostgreSQL (local Docker in dev, Aiven cloud for deployment), Event Sourcing
 - **AI**: Ollama (Docker) + RAG on an aviation knowledge base (to be built)
 
 ## 7. Event model (Event Sourcing) — first draft

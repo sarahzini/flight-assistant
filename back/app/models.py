@@ -15,8 +15,9 @@ class Airport(BaseModel):
 
 
 class Airline(BaseModel):
-    name: str | None = None
-    iata: str | None = None
+    name: str
+    iata: str
+    icon_url: str
 
 class Flight(BaseModel):
     flight_date: str | None = None

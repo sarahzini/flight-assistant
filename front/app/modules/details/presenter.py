@@ -18,6 +18,7 @@ class DetailsPresenter(QObject, AsyncTaskRunner):
         self._app_state = app_state
 
         view.refresh_clicked.connect(self._on_refresh)
+        view.lookup_requested.connect(self._on_lookup)
 
     def refresh(self) -> None:
         flight = self._app_state.selected_flight
@@ -35,7 +36,12 @@ class DetailsPresenter(QObject, AsyncTaskRunner):
             self._view.show_placeholder()
             return
 
-        flight_number = flight.flight_number
+        self._fetch(flight.flight_number)
+
+    def _on_lookup(self, flight_number: str) -> None:
+        self._fetch(flight_number)
+
+    def _fetch(self, flight_number: str) -> None:
         self._view.clear_error()
         self._view.set_loading(True)
 

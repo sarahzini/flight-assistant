@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
 )
 
 from app.domain.models import AdvisorAnswer
+from app.shared.remote_image import make_remote_icon_label
 from app.shared.theme import (
     Color,
     ErrorLabel,
@@ -27,6 +28,8 @@ from app.shared.theme import (
 class AdvisorView(QWidget):
     ask_clicked = Signal()
 
+    ADVISOR_ICON_URL = "https://res.cloudinary.com/tcydjewx/image/upload/v1785960759/Screenshot_2026-08-05_231227_ozspru.png"
+
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._build_ui()
@@ -37,11 +40,23 @@ class AdvisorView(QWidget):
         layout.setContentsMargins(32, 28, 32, 28)
         layout.setSpacing(16)
 
+        icon_label = make_remote_icon_label(self.ADVISOR_ICON_URL, size=48)
+
+        header_row = QHBoxLayout()
+        header_row.setSpacing(12)
+        header_text = QVBoxLayout()
+        header_text.setSpacing(2)
+
         title = page_title("AI Advisor")
         subtitle = page_subtitle(
             "Ask aviation questions — answered from the knowledge base (RAG). "
             "Try: “What is a connection?” or “Baggage rules?”"
         )
+        header_text.addWidget(title)
+        header_text.addWidget(subtitle)
+
+        header_row.addWidget(icon_label)
+        header_row.addLayout(header_text, stretch=1)
 
         question_label = field_label("Your question")
 
@@ -94,8 +109,7 @@ class AdvisorView(QWidget):
             """
         )
 
-        layout.addWidget(title)
-        layout.addWidget(subtitle)
+        layout.addLayout(header_row)
         layout.addWidget(question_label)
         layout.addWidget(self._question_input)
         layout.addLayout(button_row)

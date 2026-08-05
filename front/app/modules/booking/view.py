@@ -32,9 +32,10 @@ class BookingView(QWidget):
     confirm_clicked = Signal(str)
     cancel_clicked = Signal(str)
     refresh_clicked = Signal()
+    history_clicked = Signal(str)
 
     _COLUMNS = ("ID", "Flight", "Passenger", "Status", "Actions")
-    ACTIONS_COLUMN_WIDTH = 190
+    ACTIONS_COLUMN_WIDTH = 270
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -89,10 +90,11 @@ class BookingView(QWidget):
         self._table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self._table.setAlternatingRowColors(True)
         self._table.verticalHeader().setVisible(False)
+        self._table.verticalHeader().setDefaultSectionSize(44)
         self._table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self._table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         # A fixed width (rather than ResizeToContents) avoids Qt under-sizing
-        # this column and clipping the Confirm/Cancel button labels.
+        # this column and clipping the Confirm/Cancel/History button labels.
         self._table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
         self._table.setColumnWidth(4, self.ACTIONS_COLUMN_WIDTH)
         self._table.setStyleSheet(table_style())
@@ -169,8 +171,15 @@ class BookingView(QWidget):
                 lambda checked=False, bid=booking.booking_id: self.cancel_clicked.emit(bid)
             )
 
+            history_btn = SecondaryButton("History")
+            history_btn.setMinimumWidth(76)
+            history_btn.clicked.connect(
+                lambda checked=False, bid=booking.booking_id: self.history_clicked.emit(bid)
+            )
+
             actions_layout.addWidget(confirm_btn)
             actions_layout.addWidget(cancel_btn)
+            actions_layout.addWidget(history_btn)
             actions_layout.addStretch()
             self._table.setCellWidget(row, 4, actions)
 

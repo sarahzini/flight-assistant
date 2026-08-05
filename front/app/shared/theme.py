@@ -194,7 +194,7 @@ class SecondaryButton(QPushButton):
                 color: {Color.SLATE_600};
                 border: 1px solid {Color.SLATE_300};
                 border-radius: 8px;
-                padding: 10px 20px;
+                padding: 7px 14px;
                 font-size: {Font.SMALL}px;
                 font-weight: 500;
             }}
@@ -234,7 +234,7 @@ class SuccessButton(QPushButton):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         # Without a minimum width, a table cell widget can squeeze this
         # button below its natural size and clip the label text.
-        self.setMinimumWidth(76)
+        self.setMinimumWidth(90)
         self.setStyleSheet(
             f"""
             QPushButton {{
@@ -242,7 +242,7 @@ class SuccessButton(QPushButton):
                 color: {Color.WHITE};
                 border: none;
                 border-radius: 6px;
-                padding: 5px 12px;
+                padding: 7px 14px;
                 font-size: {Font.TINY}px;
                 font-weight: 600;
             }}
@@ -260,7 +260,7 @@ class DangerOutlineButton(QPushButton):
         self.setCursor(Qt.CursorShape.PointingHandCursor)
         # Without a minimum width, a table cell widget can squeeze this
         # button below its natural size and clip the label text.
-        self.setMinimumWidth(76)
+        self.setMinimumWidth(90)
         self.setStyleSheet(
             f"""
             QPushButton {{
@@ -268,7 +268,7 @@ class DangerOutlineButton(QPushButton):
                 color: {Color.DANGER};
                 border: 1px solid {Color.DANGER_SOFT_BORDER};
                 border-radius: 6px;
-                padding: 5px 12px;
+                padding: 7px 14px;
                 font-size: {Font.TINY}px;
                 font-weight: 600;
             }}
